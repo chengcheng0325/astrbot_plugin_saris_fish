@@ -114,7 +114,7 @@ def simulate_fishing(fish_db,db_economy,db_user, fishing_pole = "木钓竿", bai
 """
         return test  # 冷却中，什么都没钓到
     else:
-        db_user.update_fish_cooling() # 冷却时间更新
+        db_user.update_fish_cooling(10) # 冷却时间更新
 
 
 
