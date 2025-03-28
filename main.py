@@ -2,7 +2,7 @@ from astrbot.api.event import filter, AstrMessageEvent, MessageEventResult
 from astrbot.api.all import *
 from .API.fish import simulate_fishing
 
-@register("saris_fish", "城城", "赛博钓鱼-参考泰拉瑞亚", "1.0.0")
+@register("saris_fish", "城城", "赛博钓鱼-参考泰拉瑞亚", "1.0.1")
 class MyPlugin(Star):
     def __init__(self, context: Context):
         super().__init__(context)

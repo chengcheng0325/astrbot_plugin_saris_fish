@@ -178,8 +178,8 @@ def simulate_fishing(fish_db,db_economy,db_user, db_backpack, fishing_pole = "�
     if fish_cooling > time:
         test = f"----- 赛博钓鱼 -----\n你还在冷却时间内，请等待 {fish_cooling - time}\n{random.choice(fishing_quotes2)}"
         return test  # 冷却中，什么都没钓到
-    # else:
-    #     db_user.update_fish_cooling(10) # 冷却时间更新
+    else:
+        db_user.update_fish_cooling(10) # 冷却时间更新
 
     # 获取渔力
     fishing_pole_power = fish_db.get_fishing_pole_by_kind(fishing_pole[2])[2]

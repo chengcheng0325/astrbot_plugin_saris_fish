@@ -1,6 +1,6 @@
 name: saris_fish # 这是你的插件的唯一识别名。
 desc: 赛博钓鱼-参考泰拉瑞亚 # 插件简短描述
 help:  # 插件的帮助信息
-version: v1.0.0 # 插件版本号。格式：v1.1.1 或者 v1.1
+version: v1.0.1 # 插件版本号。格式：v1.1.1 或者 v1.1
 author: 城城 # 作者
 repo: https://github.com/chengcheng0325/astrbot_plugin_saris_fish # 插件的仓库地址
