@@ -129,7 +129,7 @@ def determine_catch_quality(fishing_power):
     return successful_qualities
 
 # 模拟钓鱼逻辑
-def simulate_fishing(fish_db,db_economy,db_user, db_backpack, fishing_pole = "木钓竿", bait = "学徒诱饵", biome = "丛林", height = "地表"):
+def simulate_fishing(fish_db,db_economy,db_user, db_backpack, config, fishing_pole = "木钓竿", bait = "学徒诱饵", biome = "丛林", height = "地表"):
     """
     模拟钓鱼过程。
 
@@ -142,7 +142,9 @@ def simulate_fishing(fish_db,db_economy,db_user, db_backpack, fishing_pole = "�
     Returns:
         钓到的物品 (Fish 对象)，如果没有钓到则返回 None。
     """
-
+    fish_config = config.get("fish", {})
+    Basic_fishing_power = fish_config.get("Basic_fishing_power", 50)
+    if Basic_fishing_power == None: Basic_fishing_power = 50
     time = datetime.strptime(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "%Y-%m-%d %H:%M:%S")
     fish_cooling = datetime.strptime(db_user.query_fish_cooling()[0], "%Y-%m-%d %H:%M:%S")
     
@@ -185,7 +187,7 @@ def simulate_fishing(fish_db,db_economy,db_user, db_backpack, fishing_pole = "�
     fishing_pole_power = fish_db.get_fishing_pole_by_kind(fishing_pole[2])[2]
     bait_power = fish_db.get_bait_by_kind(bait[2])[2]
     # 计算总渔力
-    total_fishing_power = fishing_pole_power + bait_power
+    total_fishing_power = Basic_fishing_power + fishing_pole_power + bait_power
     print(f"总渔力: {total_fishing_power}")
     # total_fishing_power = 500
 

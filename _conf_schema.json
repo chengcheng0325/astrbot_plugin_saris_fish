@@ -1,0 +1,13 @@
+{
+    "fish" : {
+        "type": "object",
+        "items": {
+            "Basic_fishing_power" : {
+                "description": "渔力",
+                "type": "int",
+                "hint": "基础渔力, 默认为 50",
+                "default": 50
+            }
+        }
+    }
+}

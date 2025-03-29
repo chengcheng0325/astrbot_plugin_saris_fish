@@ -1,4 +1,4 @@
-INSERT INTO fishstore (ItemName, ItemCount, ItemType, ItemValue, ItemDurability)
+INSERT INTO fishing_rod_store (ItemName, ItemCount, ItemType, ItemValue, ItemDurability)
 VALUES
     ('木钓竿', 1, '鱼竿', 0.66, 10),
     ('强化钓竿', 1, '鱼竿', 24.00, 50),
@@ -10,7 +10,4 @@ VALUES
     ('机械师钓竿', 1, '鱼竿', 400.00, 30),
     ('冤大头钓竿', 1, '鱼竿', 700.00, 50),
     ('熔线钓钩', 1, '鱼竿', 1000.00, 60),
-    ('金钓竿', 1, '鱼竿', 2000.00, 70),
-    ('学徒诱饵', 5,'鱼饵', 10.00, 0),
-    ('熟手诱饵', 3,'鱼饵', 50.00, 0),
-    ('大师诱饵', 1,'鱼饵', 150.00, 0);
+    ('金钓竿', 1, '鱼竿', 2000.00, 70);

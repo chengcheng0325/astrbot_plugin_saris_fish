@@ -13,9 +13,9 @@
 
   
 
-**版本：** v1.0.1 (当前版本号)
+**版本：** v1.1.0 (当前版本号)
 
-  
+**体验群：**[[1040631421](https://qm.qq.com/q/e5NwA7IdHO)]
 
 ---
 
@@ -29,15 +29,15 @@
 
 - [ ] 装备饰品...
 
-- [ ] 商店 -- 会放在经济插件里 [[astrbot_plugin_saris_economic](https://github.com/chengcheng0325/astrbot_plugin_saris_economic)]
+- [x] 商店 -- 在经济插件里 [[astrbot_plugin_saris_economic](https://github.com/chengcheng0325/astrbot_plugin_saris_economic)]
 
   
 
 **依赖项：**
 
   
-
-* [astrbot_plugin_saris_db](https://github.com/chengcheng0325/astrbot_plugin_saris_db) v0.2.0
+* [astrbot_plugin_saris_economic](https://github.com/chengcheng0325/astrbot_plugin_saris_economic)
+* [astrbot_plugin_saris_db](https://github.com/chengcheng0325/astrbot_plugin_saris_db)
 
   
 
