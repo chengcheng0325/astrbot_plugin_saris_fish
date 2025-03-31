@@ -9,6 +9,9 @@ FISH = """\
 购买 渔具  鱼竿|鱼饵 ID [购买鱼竿或鱼饵]
 我的背包 [查看背包内的鱼饵和鱼竿的ID]
 使用 渔具 ID [装备鱼竿或鱼饵]
+维修 查询 ID [查看鱼竿或鱼饵的维修信息]
+维修 低级|中级|高级 ID [修理鱼竿或鱼饵]
+开箱 ID [打开宝箱]
 钓鱼 [开始钓鱼]
 
 鱼竿每次使用损失1点耐久
@@ -72,7 +75,7 @@ class MyPlugin(Star):
         user_id = event.get_sender_id()
         try:
             with self.open_databases(self.database_plugin_config, self.DATABASE_FILE, user_id) as (db_user, db_economy, db_fish, db_backpack, db_store):
-                fish = simulate_fishing(db_fish,db_economy,db_user, db_backpack, self.config)
+                fish = simulate_fishing(db_fish,db_economy,db_user, db_backpack, db_store, self.config)
                 yield event.plain_result(fish)
         except Exception as e:
             logger.exception(f"用户 {user_id} 钓鱼失败: {e}")
