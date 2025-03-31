@@ -20,17 +20,20 @@ FISH = """\
 """
 
 
-@register("saris_fish", "城城", "赛博钓鱼-参考泰拉瑞亚", "1.1.0")
+@register("saris_fish", "城城", "赛博钓鱼-参考泰拉瑞亚", "1.1.1")
 class MyPlugin(Star):
     def __init__(self, context: Context, config: dict):
         super().__init__(context)
         self.config = config
-        logger.info("------ saris_fish ------")
-        logger.info("欢迎使用赛博钓鱼插件！")
-        self._init_env()
-        logger.info("------ saris_fish ------")
 
-    def _init_env(self):
+    @filter.on_astrbot_loaded()
+    async def on_astrbot_loaded(self):
+        """
+        插件初始化
+        """
+        logger.info("------ saris_fish ------")
+        logger.info(f"如果有问题，请在 https://github.com/chengcheng0325/astrbot_plugin_saris_fish/issues 提出 issue")
+        logger.info("或加作者QQ: 3079233608 进行反馈。")
         self.database_plugin = self.context.get_registered_star("saris_db")
         self.economic_plugin = self.context.get_registered_star("saris_Economic")
         # 数据库插件
@@ -50,6 +53,7 @@ class MyPlugin(Star):
             self.economic_plugin_activated = False
         else:
             self.economic_plugin_activated = True
+        logger.info("------ saris_fish ------")
 
 
     @filter.command("钓鱼")
@@ -57,7 +61,6 @@ class MyPlugin(Star):
         """
         钓鱼功能：
         """
-        self._init_env()
         if not self.database_plugin_activated:
             yield event.plain_result("数据库插件未加载，钓鱼功能无法使用。\n请先安装并启用 astrbot_plugin_saris_db。\n插件仓库地址：https://github.com/chengcheng0325/astrbot_plugin_saris_db")
             return
