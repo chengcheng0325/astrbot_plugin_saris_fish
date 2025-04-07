@@ -244,39 +244,30 @@ def simulate_fishing(fish_db,db_economy,db_user, db_backpack, db_store, config, 
     if Basic_fishing_power == None: Basic_fishing_power = 50
     time = datetime.strptime(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "%Y-%m-%d %H:%M:%S")
     fish_cooling = datetime.strptime(db_user.query_fish_cooling()[0], "%Y-%m-%d %H:%M:%S")
-    
-    fishing_pole = db_backpack.query_backpack_item_type("鱼竿")
+    fishing_pole_1 = db_user.query_equipment_type("鱼竿")
+    bait_1 = db_user.query_equipment_type("鱼饵")
+
+
+    fishing_pole = db_backpack.query_backpack_ID(fishing_pole_1[3])
     # print(f"鱼竿: {fishing_pole}")
-    bait = db_backpack.query_backpack_item_type("鱼饵")
+    bait = db_backpack.query_backpack_ID(bait_1[3])
     # print(f"鱼饵: {bait}")
 
     if fishing_pole is None: return f"----- 赛博钓鱼 -----\n你还没有钓竿\n{random.choice(quotes)}"
     if fishing_pole is None: return f"----- 赛博钓鱼 -----\n你还没有鱼饵\n{random.choice(quotes2)}"
-    state = False
-    for i in fishing_pole:
-        if i[8] == 1:
-            fishing_pole = i
-            state = True
-            break
-    if state == False:
-        return f"----- 赛博钓鱼 -----\n你还没有装备钓竿\n{random.choice(quotes)}"
-    state = False
-    for i in bait:
-        if i[8] == 1:
-            bait = i
-            state = True
-            break
-    if state == False:
-        return f"----- 赛博钓鱼 -----\n你还没有装备鱼饵\n{random.choice(quotes2)}"
+    if fishing_pole[8] == 0: return f"----- 赛博钓鱼 -----\n你还没有装备钓竿\n{random.choice(quotes)}"
+    if bait[8] == 0: return f"----- 赛博钓鱼 -----\n你还没有装备鱼饵\n{random.choice(quotes2)}"
 
     if fishing_pole[7] <= 0: return f"----- 赛博钓鱼 -----\n你的[{fishing_pole[0]}]{fishing_pole[2]}已经损坏了，请更换。\n{random.choice(quotes3)}"
 
 
-    if fish_cooling > time:
-        test = f"----- 赛博钓鱼 -----\n你还在冷却时间内，请等待 {fish_cooling - time}\n{random.choice(fishing_quotes2)}"
-        return test  # 冷却中，什么都没钓到
+    if fish_cooling > time: return f"----- 赛博钓鱼 -----\n你还在冷却时间内，请等待 {fish_cooling - time}\n{random.choice(fishing_quotes2)}"  # 冷却中，什么都没钓到
     else:
         db_user.update_fish_cooling(10) # 冷却时间更新
+
+    frequency = 1
+    if fishing_pole[2] == "野性双头钓竿":
+        frequency = 2
 
     # 获取渔力
     fishing_pole_power = fish_db.get_fishing_pole_by_kind(fishing_pole[2])
@@ -292,14 +283,14 @@ def simulate_fishing(fish_db,db_economy,db_user, db_backpack, db_store, config, 
     if random.random() < 消耗几率:
         db_backpack.update_backpack_item_count(-1, bait[0]) # 数量-1
         if bait[3] - 1 <= 0:
-            iteam = db_store.get_bait_store_item(bait[0])
-            if iteam[4] > db_economy.get_economy():
+            item = db_store.get_bait_store_item_ItemName(bait[2])
+            if item[4] > db_economy.get_economy():
                 buy_state = "\n自动购买失败 余额不足"
                 db_backpack.delete_backpack(bait[0]) # 数量为0，删除
             else:
-                db_economy.reduce_economy(iteam[4])
-                db_backpack.update_backpack_item_count(iteam[2], bait[0])
-                buy_state = f"\n自动购买成功 {bait[2]}+{iteam[2]}"
+                db_economy.reduce_economy(item[4])
+                db_backpack.update_backpack_item_count(item[2], bait[0])
+                buy_state = f"\n自动购买成功 {bait[2]}+{item[2]}"
         消耗 = True
     else:
         消耗 = False
@@ -309,70 +300,96 @@ def simulate_fishing(fish_db,db_economy,db_user, db_backpack, db_store, config, 
 
     # 基础成功率 (可以调整)
     base_success_rate = 0.5 + (total_fishing_power / 200)  # 将渔力转化为成功率的加成
+    test = "----- 赛博钓鱼 -----\n"
+    for i in range(frequency):
+        test += f"--第{i+1}次抛竿--\n"
+        # 随机调整
+        success_rate = random.uniform(max(0, base_success_rate - 0.05), min(1, base_success_rate + 0.05))
 
+        # 决定是否钓到东西
+        if random.random() < success_rate:
+            # 钓到了东西
+            successful_qualities = determine_catch_quality(total_fishing_power) # 判定渔获品质
+            successful_qualities.sort(key=lambda x: FISHING_QUALITIES.index(x), reverse=True) # 从最高品质开始判断
+            # print(f"通过判定的品质: {successful_qualities}")
 
-    # 随机调整
-    success_rate = random.uniform(max(0, base_success_rate - 0.05), min(1, base_success_rate + 0.05))
+            # 检查生物群系特产鱼
+            for quality in successful_qualities: # 从最高品质开始遍历
+                # print(f"{quality}")
+                fish = fish_db.get_all_fish()
+                # print(fish)
+                fish_list = []
+                for f in fish:
+                    # print(f)
+                    if quality in f[6] and len(quality) == len(f[6]):
+                        fish_list.append(f)
+                possible_catches = [fish for fish in fish_list if "任意" in fish[5] or biome in fish[5]]  # 根据生物群系过滤
+                # print(possible_catches)
+                possible_catches = [fish for fish in possible_catches if "任意" in fish[4] or height in fish[4]] # 根据高度过滤
+                # print(possible_catches)
+                sword = Equipment(
+                    original_max=fishing_pole_power[5],
+                    current_max=fishing_pole[6],
+                    current=fishing_pole[7]-1,
+                    original_value=fishing_pole_power[3]
+                )
+                current_value = round(sword.current_value, 2)
+                db_backpack.update_backpack_item_value(current_value, fishing_pole[0]) # 更新钓竿的价值
 
-    # 决定是否钓到东西
-    if random.random() < success_rate:
-        # 钓到了东西
-        successful_qualities = determine_catch_quality(total_fishing_power) # 判定渔获品质
-        successful_qualities.sort(key=lambda x: FISHING_QUALITIES.index(x), reverse=True) # 从最高品质开始判断
-        # print(f"通过判定的品质: {successful_qualities}")
-
-        # 检查生物群系特产鱼
-        for quality in successful_qualities: # 从最高品质开始遍历
-            # print(f"{quality}")
-            fish = fish_db.get_all_fish()
-            # print(fish)
-            fish_list = []
-            for f in fish:
-                # print(f)
-                if quality in f[6] and len(quality) == len(f[6]):
-                    fish_list.append(f)
-            possible_catches = [fish for fish in fish_list if "任意" in fish[5] or biome in fish[5]]  # 根据生物群系过滤
-            # print(possible_catches)
-            possible_catches = [fish for fish in possible_catches if "任意" in fish[4] or height in fish[4]] # 根据高度过滤
-            # print(possible_catches)
-            sword = Equipment(
-                original_max=fishing_pole_power[5],
-                current_max=fishing_pole[6],
-                current=fishing_pole[7]-1,
-                original_value=fishing_pole_power[3]
-            )
-            current_value = round(sword.current_value, 2)
-            db_backpack.update_backpack_item_value(current_value, fishing_pole[0]) # 更新钓竿的价值
-
-            if possible_catches:
-                chosen_fish = random.choice(possible_catches)
-                if chosen_fish[8] == 1:
-                    任务鱼 = True
-                else:
-                    任务鱼 = False
-                fish_count = 1
-                if chosen_fish[1] == "炸弹鱼" or chosen_fish[1] == "寒霜飞鱼":
-                    fish_count = calculate_fish(total_fishing_power, chosen_fish[1])
-
-                
-                test = f"\n----- 赛博钓鱼 -----\n你钓到了: {chosen_fish[1]}x{fish_count}\n价值: {chosen_fish[2]}\n品质: {chosen_fish[3]}\n类型: {chosen_fish[7]}\n鱼饵消耗: {消耗}\n耐久损失: {fishing_pole[7] - 1}[-1]\n任务鱼: {任务鱼}\n当前金币: {db_economy.get_economy()+chosen_fish[2]*fish_count}[+{chosen_fish[2]*fish_count}]"
-
-
-                if chosen_fish[7] != "箱子" and chosen_fish[8] == 0:
-                    db_economy.add_economy(chosen_fish[2]*fish_count) # 获得钓到的鱼的价值
-                    return test
-                else:
-                    if db_backpack.query_backpack_ItemName(chosen_fish[1]) is None:
-                        db_backpack.insert_backpack(chosen_fish[1], 1, chosen_fish[7], chosen_fish[2], 0, 0, 0) # 加入背包
+                if possible_catches:
+                    chosen_fish = random.choice(possible_catches)
+                    if chosen_fish[8] == 1:
+                        任务鱼 = True
                     else:
-                        # print(chosen_fish[1]+"数量+1")
-                        db_backpack.update_backpack_item_count(1, db_backpack.query_backpack_ItemName(chosen_fish[1])[0]) # 数量+1
-                    return test
+                        任务鱼 = False
+                    fish_count = 1
+                    if chosen_fish[1] == "炸弹鱼" or chosen_fish[1] == "寒霜飞鱼":
+                        fish_count = calculate_fish(total_fishing_power, chosen_fish[1])
+
+                    
 
 
-    else:
-        test = f"----- 赛博钓鱼 -----\n鱼饵消耗: {消耗}{buy_state}\n耐久损失: {fishing_pole[7] - 1}[-1]\n{random.choice(fishing_quotes2)}"
-        return test  # 什么都没钓到
+                    if chosen_fish[7] != "箱子" and chosen_fish[8] == 0:
+                        db_economy.add_economy(chosen_fish[2]*fish_count) # 获得钓到的鱼的价值
+                        test += f"你钓到了: {chosen_fish[1]}x{fish_count}\n"
+                        test += f"价值: {chosen_fish[2]}\n"
+                        test += f"品质: {chosen_fish[3]}\n"
+                        test += f"类型: {chosen_fish[7]}\n"
+                        test += f"鱼饵消耗: {消耗}\n"
+                        test += f"耐久损失: {fishing_pole[7] - 1}[-1]\n"
+                        test += f"当前金币: {db_economy.get_economy()+chosen_fish[2]*fish_count}[+{chosen_fish[2]*fish_count}]\n"
+                        # test = f"\n----- 赛博钓鱼 -----\n你钓到了: {chosen_fish[1]}x{fish_count}\n价值: {chosen_fish[2]}\n品质: {chosen_fish[3]}\n类型: {chosen_fish[7]}\n鱼饵消耗: {消耗}\n耐久损失: {fishing_pole[7] - 1}[-1]\n任务鱼: {任务鱼}\n当前金币: {db_economy.get_economy()+chosen_fish[2]*fish_count}[+{chosen_fish[2]*fish_count}]"
+                        # return test
+                        print(1)
+                        break
+                    else:
+                        if db_backpack.query_backpack_ItemName(chosen_fish[1]) is None:
+                            db_backpack.insert_backpack(chosen_fish[1], 1, chosen_fish[7], chosen_fish[2], 0, 0, 0) # 加入背包
+                        else:
+                            # print(chosen_fish[1]+"数量+1")
+                            db_backpack.update_backpack_item_count(1, db_backpack.query_backpack_ItemName(chosen_fish[1])[0]) # 数量+1
+                        test += f"你钓到了: {chosen_fish[1]}x{fish_count}\n"
+                        test += f"价值: {chosen_fish[2]}\n"
+                        test += f"品质: {chosen_fish[3]}\n"
+                        test += f"类型: {chosen_fish[7]}\n"
+                        test += f"鱼饵消耗: {消耗}\n"
+                        test += f"耐久损失: {fishing_pole[7] - 1}[-1]\n"
+                        test += f"当前金币: {db_economy.get_economy()+0}[+{0}]\n"
+                        # test = f"\n----- 赛博钓鱼 -----\n你钓到了: {chosen_fish[1]}x{fish_count}\n价值: {chosen_fish[2]}\n品质: {chosen_fish[3]}\n类型: {chosen_fish[7]}\n鱼饵消耗: {消耗}\n耐久损失: {fishing_pole[7] - 1}[-1]\n任务鱼: {任务鱼}\n当前金币: {db_economy.get_economy()+0}[+{0}]"
+                        # return test
+                        print(2)
+                        break
+
+
+        else:
+            test += f"鱼饵消耗: {消耗}\n"
+            test += f"耐久损失: {fishing_pole[7] - 1}[-1]\n"
+            test += f"{random.choice(fishing_quotes2)}\n"
+            # test = f"----- 赛博钓鱼 -----\n鱼饵消耗: {消耗}{buy_state}\n耐久损失: {fishing_pole[7] - 1}[-1]\n{random.choice(fishing_quotes2)}"
+            # return test  # 什么都没钓到
+            print(3)
+            break
+    return test
 
 
 # 使用示例

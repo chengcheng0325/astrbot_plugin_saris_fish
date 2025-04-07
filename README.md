@@ -13,7 +13,7 @@
 
   
 
-**版本：** v1.2.0 (当前版本号)
+**版本：** v1.3.0 (当前版本号)
 
 **体验群：**[[1040631421](https://qm.qq.com/q/e5NwA7IdHO)]
 
@@ -31,7 +31,9 @@
 
 - [x] 商店 -- 在经济插件里 [[astrbot_plugin_saris_economic](https://github.com/chengcheng0325/astrbot_plugin_saris_economic)]
 
-  
+- [x] 新鱼竿[野性双头钓竿]一次钓2条鱼
+
+更新后删除astrbot_plugin_database_store.db和astrbot_plugin_database_fish.db文件,位于.data\Database
 
 **依赖项：**
 
