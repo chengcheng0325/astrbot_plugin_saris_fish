@@ -206,10 +206,10 @@ def simulate_fishing(fish_db,db_economy,db_user, db_backpack, db_store, config, 
     start_virtual = datetime(2025, 1, 1, 0, 0, 0)
     clock = VirtualClock(start_real,start_virtual,time_ratio=12)
     clock_data = clock.get_virtual_clock_data()
-    print(f"虚拟时间: {clock_data["virtual_time"].time()}")
+    virtual_time = clock_data["virtual_time"].time()
+    # print(f"虚拟时间: {virtual_time}")
 
     # 时间影响
-    virtual_time = clock_data["virtual_time"].time()
     four_thirty = datetime.strptime("04:30:00", "%H:%M:%S").time()
     six_clock = datetime.strptime("06:00:00", "%H:%M:%S").time()
     nine_clock = datetime.strptime("09:00:00", "%H:%M:%S").time()
