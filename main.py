@@ -21,7 +21,8 @@ FISH = """\
 只有垃圾和鱼会自动出售,其他东西会留在背包
 鱼竿如果没有耐久不会消失,只会损坏,后续会出维修\
 """
-
+# 路径配置
+PLUGIN_DIR = os.path.join('data', 'plugins', 'astrbot_plugin_saris_fish')
 
 @register("saris_fish", "城城", "赛博钓鱼-参考泰拉瑞亚", "1.1.1")
 class MyPlugin(Star):
@@ -87,7 +88,8 @@ class MyPlugin(Star):
         赛博钓鱼游戏指南
         """
         try:
-            yield event.plain_result(FISH)
+            yield event.image_result(os.path.join(PLUGIN_DIR, "help.png"))
+            # yield event.plain_result(FISH)
         except Exception as e:
             logger.exception(f"钓鱼游戏指南发送失败: {e}")
     

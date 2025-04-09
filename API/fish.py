@@ -264,7 +264,26 @@ def simulate_fishing(fish_db,db_economy,db_user, db_backpack, db_store, config, 
     if fish_cooling > time: return f"----- 赛博钓鱼 -----\n你还在冷却时间内，请等待 {fish_cooling - time}\n{random.choice(fishing_quotes2)}"  # 冷却中，什么都没钓到
     else:
         db_user.update_fish_cooling(10) # 冷却时间更新
+    # 饰品判定
+    饰品1 = db_user.query_equipment_type("饰品1")
+    饰品2 = db_user.query_equipment_type("饰品2")
+    饰品3 = db_user.query_equipment_type("饰品3")
+    饰品_power = 0
+    if 饰品1[3] != -1:
+        饰品_power += fish_db.get_jewelry_by_kind(饰品1[4])[2]
+    elif 饰品2[3] != -1:
+        饰品_power += fish_db.get_jewelry_by_kind(饰品2[4])[2]
+    elif 饰品3[3] != -1:
+        饰品_power += fish_db.get_jewelry_by_kind(饰品3[4])[2]
+    
+    渔具箱 = False
+    渔具箱_饰品 = db_user.query_equipment_name("渔具箱")
+    if 渔具箱_饰品 is not None:
+        渔具箱 = True
 
+
+
+    
     frequency = 1
     if fishing_pole[2] == "野性双头钓竿":
         frequency = 2
@@ -273,13 +292,15 @@ def simulate_fishing(fish_db,db_economy,db_user, db_backpack, db_store, config, 
     fishing_pole_power = fish_db.get_fishing_pole_by_kind(fishing_pole[2])
     bait_power = fish_db.get_bait_by_kind(bait[2])[2]
     # 计算总渔力
-    total_fishing_power = (Basic_fishing_power + fishing_pole_power[2] + bait_power) * Time_multiplier * Moon_phase_magnification
-    print(f"基础渔力: {Basic_fishing_power}|钓竿: {fishing_pole_power[2]}|饵料: {bait_power}|时间: {Time_multiplier}|月相: {Moon_phase_magnification}|总渔力: {total_fishing_power}")
+    total_fishing_power = (Basic_fishing_power + fishing_pole_power[2] + bait_power) * Time_multiplier * Moon_phase_magnification + 饰品_power
+    print(f"基础渔力: {Basic_fishing_power}|钓竿: {fishing_pole_power[2]}|饵料: {bait_power}|时间: {Time_multiplier}|月相: {Moon_phase_magnification}|饰品: {饰品_power}|总渔力: {total_fishing_power}")
     # total_fishing_power = 500
 
     # 渔饵消耗
     buy_state = ""
     消耗几率 = 1/(1 + bait_power/6)
+    if 渔具箱:
+        消耗几率 = 1/(2 + bait_power/6)
     if random.random() < 消耗几率:
         db_backpack.update_backpack_item_count(-1, bait[0]) # 数量-1
         if bait[3] - 1 <= 0:
@@ -301,6 +322,8 @@ def simulate_fishing(fish_db,db_economy,db_user, db_backpack, db_store, config, 
     # 基础成功率 (可以调整)
     base_success_rate = 0.5 + (total_fishing_power / 200)  # 将渔力转化为成功率的加成
     test = "----- 赛博钓鱼 -----\n"
+    test += f"鱼饵消耗: {消耗}\n"
+    test += f"耐久损失: {fishing_pole[7] - 1}[-1]\n"
     for i in range(frequency):
         test += f"--第{i+1}次抛竿--\n"
         # 随机调整
@@ -355,8 +378,6 @@ def simulate_fishing(fish_db,db_economy,db_user, db_backpack, db_store, config, 
                         test += f"价值: {chosen_fish[2]}\n"
                         test += f"品质: {chosen_fish[3]}\n"
                         test += f"类型: {chosen_fish[7]}\n"
-                        test += f"鱼饵消耗: {消耗}\n"
-                        test += f"耐久损失: {fishing_pole[7] - 1}[-1]\n"
                         test += f"当前金币: {db_economy.get_economy()+chosen_fish[2]*fish_count}[+{chosen_fish[2]*fish_count}]\n"
                         # test = f"\n----- 赛博钓鱼 -----\n你钓到了: {chosen_fish[1]}x{fish_count}\n价值: {chosen_fish[2]}\n品质: {chosen_fish[3]}\n类型: {chosen_fish[7]}\n鱼饵消耗: {消耗}\n耐久损失: {fishing_pole[7] - 1}[-1]\n任务鱼: {任务鱼}\n当前金币: {db_economy.get_economy()+chosen_fish[2]*fish_count}[+{chosen_fish[2]*fish_count}]"
                         # return test
@@ -372,8 +393,6 @@ def simulate_fishing(fish_db,db_economy,db_user, db_backpack, db_store, config, 
                         test += f"价值: {chosen_fish[2]}\n"
                         test += f"品质: {chosen_fish[3]}\n"
                         test += f"类型: {chosen_fish[7]}\n"
-                        test += f"鱼饵消耗: {消耗}\n"
-                        test += f"耐久损失: {fishing_pole[7] - 1}[-1]\n"
                         test += f"当前金币: {db_economy.get_economy()+0}[+{0}]\n"
                         # test = f"\n----- 赛博钓鱼 -----\n你钓到了: {chosen_fish[1]}x{fish_count}\n价值: {chosen_fish[2]}\n品质: {chosen_fish[3]}\n类型: {chosen_fish[7]}\n鱼饵消耗: {消耗}\n耐久损失: {fishing_pole[7] - 1}[-1]\n任务鱼: {任务鱼}\n当前金币: {db_economy.get_economy()+0}[+{0}]"
                         # return test
@@ -382,8 +401,6 @@ def simulate_fishing(fish_db,db_economy,db_user, db_backpack, db_store, config, 
 
 
         else:
-            test += f"鱼饵消耗: {消耗}\n"
-            test += f"耐久损失: {fishing_pole[7] - 1}[-1]\n"
             test += f"{random.choice(fishing_quotes2)}\n"
             # test = f"----- 赛博钓鱼 -----\n鱼饵消耗: {消耗}{buy_state}\n耐久损失: {fishing_pole[7] - 1}[-1]\n{random.choice(fishing_quotes2)}"
             # return test  # 什么都没钓到
